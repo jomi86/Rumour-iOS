@@ -21,7 +21,7 @@ struct MessageBubble: View {
             } else {
                 messageContent
                     .background(Color(.systemGray5))
-                    .foregroundColor(.black)
+                    .foregroundColor(.accent)
                     .clipShape(.rect(cornerRadius: 12))
                 Spacer()
             }
