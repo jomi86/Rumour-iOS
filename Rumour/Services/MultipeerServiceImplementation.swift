@@ -16,6 +16,7 @@ class MultipeerService: NSObject, ObservableObject {
     private let serviceType = "rumour-chat"
     private let serviceAdvertiser: MCNearbyServiceAdvertiser
     private let serviceBrowser: MCNearbyServiceBrowser
+    private let session: MCSession
     
     private var myPeerId: MCPeerID
     
@@ -23,31 +24,33 @@ class MultipeerService: NSObject, ObservableObject {
     @Published var connectedPeers: [MCPeerID] = []
     @Published var messages: [ChatMessage] = []
     
-    private let session: MCSession
-    
-    init(peerId: MCPeerID) {
+    init(peerId: MCPeerID, session: MCSession? = nil, advertiser: MCNearbyServiceAdvertiser? = nil, browser: MCNearbyServiceBrowser? = nil) {
         self.myPeerId = peerId
-        session = MCSession(peer: peerId, securityIdentity: nil, encryptionPreference: .required)
         
-        serviceAdvertiser = MCNearbyServiceAdvertiser(
+        // Use provided session or create new one
+        self.session = session ?? MCSession(peer: peerId, securityIdentity: nil, encryptionPreference: .required)
+        
+        // Use provided advertiser or create new one
+        self.serviceAdvertiser = advertiser ?? MCNearbyServiceAdvertiser(
             peer: peerId,
             discoveryInfo: nil,
             serviceType: serviceType
         )
         
-        serviceBrowser = MCNearbyServiceBrowser(
+        // Use provided browser or create new one
+        self.serviceBrowser = browser ?? MCNearbyServiceBrowser(
             peer: peerId,
             serviceType: serviceType
         )
         
         super.init()
         
-        session.delegate = self
-        serviceAdvertiser.delegate = self
-        serviceBrowser.delegate = self
+        self.session.delegate = self
+        self.serviceAdvertiser.delegate = self
+        self.serviceBrowser.delegate = self
         
-        serviceAdvertiser.startAdvertisingPeer()
-        serviceBrowser.startBrowsingForPeers()
+        self.serviceAdvertiser.startAdvertisingPeer()
+        self.serviceBrowser.startBrowsingForPeers()
     }
     
     deinit {

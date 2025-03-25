@@ -11,55 +11,71 @@ import MultipeerConnectivity
 struct PeersView: View {
     @ObservedObject var multipeerService: MultipeerService
     @Binding var isShowingPeers: Bool
+    @Environment(\.dismiss) private var dismiss
     
     var body: some View {
-        NavigationView {
+        NavigationStack {
             List {
-                Section(header: Text("Available Peers")) {
+                Section {
                     if multipeerService.availablePeers.isEmpty {
-                        Text("No peers found nearby")
-                            .foregroundColor(.secondary)
-                            .italic()
+                        HStack {
+                            Image(systemName: "person.fill.questionmark")
+                                .foregroundStyle(.secondary)
+                            Text("No peers found nearby")
+                                .foregroundColor(.secondary)
+                                .italic()
+                        }
                     } else {
                         ForEach(multipeerService.availablePeers, id: \.self) { peer in
                             Button(action: {
                                 multipeerService.invitePeer(peer)
-                                isShowingPeers = false
+                                dismiss()
                             }) {
                                 HStack {
-                                    Text(peer.displayName)
+                                    Label(peer.displayName, systemImage: "person")
                                     Spacer()
-                                    Image(systemName: "person.fill.badge.plus")
+                                    Image(systemName: "plus.circle.fill")
+                                        .foregroundStyle(.blue)
+                                        .imageScale(.large)
                                 }
                             }
                             .foregroundColor(.primary)
                         }
                     }
+                } header: {
+                    Label("Available Peers", systemImage: "person.2")
                 }
                 
-                Section(header: Text("Connected Peers")) {
+                Section {
                     if multipeerService.connectedPeers.isEmpty {
-                        Text("Not connected to any peers")
-                            .foregroundColor(.secondary)
-                            .italic()
+                        HStack {
+                            Image(systemName: "person.fill.xmark")
+                                .foregroundStyle(.secondary)
+                            Text("Not connected to any peers")
+                                .foregroundColor(.secondary)
+                                .italic()
+                        }
                     } else {
                         ForEach(multipeerService.connectedPeers, id: \.self) { peer in
                             HStack {
-                                Text(peer.displayName)
+                                Label(peer.displayName, systemImage: "person.fill")
                                 Spacer()
                                 Image(systemName: "checkmark.circle.fill")
-                                    .foregroundColor(.green)
+                                    .foregroundStyle(.green)
+                                    .imageScale(.large)
                             }
                         }
                     }
+                } header: {
+                    Label("Connected Peers", systemImage: "person.2.fill")
                 }
             }
-            .listStyle(InsetGroupedListStyle())
             .navigationTitle("Nearby Devices")
+            .navigationBarTitleDisplayMode(.inline)
             .toolbar {
-                ToolbarItem(placement: .confirmationAction) {
+                ToolbarItem(placement: .navigationBarTrailing) {
                     Button("Done") {
-                        isShowingPeers = false
+                        dismiss()
                     }
                 }
             }
